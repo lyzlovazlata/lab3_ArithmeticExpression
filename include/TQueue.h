@@ -50,6 +50,8 @@ public:
 		{
 			mem[i] = q.mem[i];
 		}
+		return *this;
+
 	}
 
 	~TQueue()

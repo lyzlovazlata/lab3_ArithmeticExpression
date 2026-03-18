@@ -10,14 +10,11 @@ int main()
 
 	string s = "-3*4+(6-2)";
 	Expression e(s);
-	try {
-		e.run();
-	}
-	catch (...) {
+	e.run();
 
-	}
 	cout << e.getPostfix() << endl;
 	cout << e.getRes() << endl;
+	cout << e;
 }				  
 
 

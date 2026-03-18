@@ -18,6 +18,29 @@ Expression& Expression::operator=(const Expression& expr)
 	res = expr.res;
 	return*this;
 }
+Expr* Expression::buildTree(TQueue<Word> postfix)
+{
+	TStack<Expr*> st(postfix.getSZ());
+
+	while (!postfix.isEmpty())
+	{
+		Word w = postfix.pop();
+
+		if (w.isNum())
+		{
+			st.push(new Number(w.getValue()));
+		}
+		else
+		{
+			Expr* right = st.pop();
+			Expr* left = st.pop();
+
+			st.push(new BiOperation(char(w.getValue()), left, right));
+		}
+	}
+
+	return st.pop();
+}
 void Expression::run()
 {
 	LexAutomat la(in);
@@ -49,41 +72,14 @@ void Expression::run()
 	postfix = sa.getPostfix();
 
 	TQueue<Word>_postfix(postfix);
-	TStack<int> stack(_postfix.getSZ());
 
-	// ну дальше стандартный постфиксный счет
-	while (!_postfix.isEmpty())
-	{
-		Word inItem = _postfix.pop();
-		if (inItem.isNum())
-			stack.push(inItem.getValue());
-		else
-		{
-			char c = char(inItem.getValue());
-			int a = stack.pop();
-			int b = stack.pop();
-			switch (c)
-			{			
-			case'-':
-				stack.push(b - a);
-				break;
-			case'+':
-				stack.push(b + a);
-				break;
+	//НОВОЕ
+	Expr* root = buildTree(_postfix);
 
-			case'*':
-				stack.push(b * a);
-				break;
-			case'/':
-				if (a != 0)
-					stack.push(b / a);
-				else throw "Don't divide by zero!";
-				break;
-			}
-		}
-	}
+	CalcVisitor calculator;
 
-	res = stack.pop(); // в конце концов останется результат
+	res = root->accept(&calculator);	
+
 }
 
 TQueue<Word> Expression::getInfix()
@@ -97,4 +93,20 @@ TQueue<Word> Expression::getPostfix()
 int Expression::getRes()
 {
 	return res;
+}
+
+
+
+
+
+
+ostream& operator<<(ostream& ostr, Expression exp)
+{
+	PrintVisitor print;
+	TQueue<Word>_postfix(exp.postfix);
+
+	Expr* root = exp.buildTree(_postfix);
+
+	root->accept(&print);
+	return ostr;
 }
