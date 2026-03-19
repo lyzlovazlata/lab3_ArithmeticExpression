@@ -7,7 +7,13 @@ using namespace std;
 
 int main()
 {
-	return 0;
+
+	string s = "-(-3)";
+	Expression e(s);
+	e.run();
+
+	cout << e.getRes() << endl;
+	cout << e;
 }				  
 
 
