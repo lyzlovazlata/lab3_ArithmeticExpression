@@ -1,80 +1,56 @@
 #pragma once
-#include"TQueue.h"
-#include"TStack.h"
-#include"Word.h"
-#include<map>
+#include "TQueue.h"
+#include "TStack.h"
+#include "Word.h"
+#include <map>
+#include "Tree.h"
 using namespace std;
-
-/*
-* Синтаксический автомат. В нем очень много: проверка скобок, проверка синтаксиса (унарность, колво операндов) а так же создание постфикса
-* Вроде как это и получилось что-то типа восходящего разбора или как его там?
-*/
 
 class SyntAutomat {
 
-	using SFunction = void (SyntAutomat::*)(Word);
-	// На вход идет очередь - из лексического автомата, на выход - очередь результативная
-	TQueue<Word> in;
-	TQueue<int> errs;
-	int err_ind;
+    using SFunction = void (SyntAutomat::*)(Word);
 
-	int state;
-	SFunction** call;
-	int** next;
+    TQueue<Word> in;
+    TQueue<int> errs;
+    int err_ind;
 
-	TStack<int> parOpen;
-	TStack<int> parClose;
+    int state;
+    SFunction** call;
+    int** next;
 
-	// Штуки для постфикса - приоритеты, стек и т.д.
-	map<char, int> priority = { {'+', 1}, {'-', 1}, {'*', 2}, {'/', 2}, {'(', 0} };
-	TQueue<Word> postfix;
-	TStack<Word> st;
-	bool canPostfix;
-	Word stackItem;
-	Word inItem;
+    TStack<int> parOpen;
+    TStack<int> parClose;
 
-	//postfix functions
+    map<char, int> priority;
+    Tree<Word> postf;
+    TStack<Node<Word>*> nums;
+    TStack<Node<Word>*> oprs;
 
-	void operatorWork(Word inItem);
+    bool canPostfix;
 
+    int nextState(Word c);
 
-	//  # TRANSITION FUNCTION #
+    void f0Push(Word word);
+    void f1OpErr(Word word);
+    void f2OpenParErr(Word word);
+    void f3CloseParErr(Word word);
+    void f4ValErr(Word word);
+    void f5OpUnar(Word word);
+    void f6FakeFunc(Word word);
 
-	int nextState(Word c);
-	//  ######################
-
-//	 # SYNTAXIS FUNCTIONS #
-
-	void f0Push(Word word);
-
-	void f1OpErr(Word word);
-	
-	void f2OpenParErr(Word word); 
-	
-	void f3CloseParErr(Word word);
-	
-	void f4ValErr(Word word);
-	void f5OpUnar(Word word);
-
-	void f6FakeFunc(Word word);
-
-	//  #####################
 public:
 
-	SyntAutomat();
-	~SyntAutomat();
+    SyntAutomat();
+    ~SyntAutomat();
 
-	SyntAutomat(const TQueue<Word> _in);
-	SyntAutomat(const SyntAutomat& _sa);
+    SyntAutomat(const TQueue<Word> _in);
+    SyntAutomat(const SyntAutomat& _sa);
 
-	SyntAutomat& operator=(const SyntAutomat _sa);
+    SyntAutomat& operator=(const SyntAutomat _sa);
 
+    void run();
 
-	void run();
-
-	TQueue<Word> getInfix();
-
-	TQueue<Word> getPostfix();
-
-	TQueue<int> getErrors();
+    TQueue<Word> getInfix();
+    Tree<Word> getPostfix();
+    TQueue<int> getErrors();
 };
