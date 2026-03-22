@@ -1,12 +1,13 @@
 #include"Expression.h"
+#include "Postfixer.h"
 
-
-Expression::Expression(string _in) : in(_in), res(0) {}
+Expression::Expression(string _in) : in(_in), res(0), treeRoot(nullptr) {}
 Expression::Expression(const Expression& expr)
 {
 	in = expr.in;
 	infix = expr.infix;
 	res = expr.res;
+	treeRoot = nullptr;
 }
 Expression& Expression::operator=(const Expression& expr)
 {
@@ -16,31 +17,11 @@ Expression& Expression::operator=(const Expression& expr)
 	res = expr.res;
 	return*this;
 }
-//Expr* Expression::buildTree(TQueue<Word> postfix)
-//{
-//	TStack<Expr*> st(postfix.getSZ());
-//
-//	while (!postfix.isEmpty())
-//	{
-//		Word w = postfix.pop();
-//
-//		if (w.isNum())
-//		{
-//			st.push(new Number(w.getValue()));
-//		}
-//		else
-//		{
-//			Expr* right = st.pop();
-//			Expr* left = st.pop();
-//
-//			st.push(new BiOperation(char(w.getValue()), left, right));
-//		}
-//	}
-//
-//	return st.pop();
-//}
+
 void Expression::run()
 {
+	if (in.empty())
+		throw invalid_argument("Empty expression");
 	LexAutomat la(in);
 	try
 	{
@@ -62,14 +43,21 @@ void Expression::run()
 	{
 		cout << "Synt Errors" << endl;
 		cout << sa.getErrors() << endl;
-		throw "Lex Er";
+		throw "Synt Er";
 	}
 
-	// прошли лекс и синт автомат -начинаем считать
-	infix = sa.getInfix();
-
-	//=--------------------------------------------------------------------------------
-	treeRoot = sa.getRoot();
+	Postfixer post(sa.getOut()); 
+	try
+	{
+		post.run();
+	}
+	catch (...)
+	{
+		cout << "Post errors" << endl;
+		cout << sa.getErrors() << endl;
+		throw "Post Er";
+	}
+	treeRoot = post.getRoot();
 	CalcVisitor calculator;
 	res = treeRoot->accept(&calculator);
 
@@ -84,13 +72,9 @@ int Expression::getRes()
 	return res;
 }
 
-
-
-
-
-
 ostream& operator<<(ostream& ostr, Expression& exp)
 {
+	if (!exp.treeRoot) return ostr;
 	PrintVisitor print;
 	exp.treeRoot->accept(&print);
 	return ostr;

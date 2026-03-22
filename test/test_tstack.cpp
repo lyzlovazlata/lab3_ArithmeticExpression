@@ -8,6 +8,7 @@ TEST(TStack, can_create_stack_with_positive_length)
 TEST(TStack, cant_create_too_large_stack)
 {
 	ASSERT_ANY_THROW(TStack<int>s(MAX_STACK_SIZE + 1));
+
 }
 TEST(TStack, cant_create_stack_with_length_less_then_zero)
 {

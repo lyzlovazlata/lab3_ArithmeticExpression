@@ -26,19 +26,7 @@ class SyntAutomat {
 	TStack<int> parOpen;
 	TStack<int> parClose;
 
-	// Штуки для постфикса - приоритеты, стек и т.д.
-	map<char, int> priority = { {'+', 1}, {'-', 1}, {'*', 2}, {'/', 2}, {'(', 0} };
-
-	TStack<Word> st;
-	bool canPostfix;
-	Word stackItem;
-	Word inItem;
-
-	TStack<Expr*> tree;
-	Expr* root;
-
-	//postfix functions
-	void operatorWork(Word inItem);
+	TQueue<Word> out;
 
 
 	//  # TRANSITION FUNCTION #
@@ -76,11 +64,7 @@ public:
 	void run();
 
 	TQueue<Word> getInfix();
-
-	Expr* getRoot()
-	{
-		return root;
-	}
+	TQueue<Word> getOut();
 
 	TQueue<int> getErrors();
 };

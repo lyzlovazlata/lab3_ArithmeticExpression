@@ -1,7 +1,7 @@
 #pragma once
-#include<iostream>
-#include<vector>
-
+#include <iostream>
+#include <vector>
+#include <stdexcept>
 
 using namespace std;
 
@@ -39,12 +39,13 @@ public:
         curr = s.curr;
         sz = s.sz;
 
-        delete[]mem;
+        delete[] mem;
         mem = new T[sz];
         for (int i = 0; i <= curr; i++)
         {
             mem[i] = s.mem[i];
         }
+        return *this;
     }
 
     ~TStack()

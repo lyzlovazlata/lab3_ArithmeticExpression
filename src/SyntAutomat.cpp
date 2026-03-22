@@ -1,43 +1,5 @@
 #include"SyntAutomat.h"
 
-// ‘ункци€ котора€ работает с постфиксными операторами (вытаскивет то шо надо как надо)
-void SyntAutomat::operatorWork(Word inItem)
-{
-	if (canPostfix)
-	{
-		while (!st.isEmpty())
-		{
-			stackItem = st.pop();
-			if (!inItem.isBin())
-			{
-				//---------------------------------------------------------
-				tree.push(new Number(0));
-			}
-			if (priority[char(inItem.getValue())] <= priority[char(stackItem.getValue())])
-			{
-				//-------------------------------------
-				Expr* r = tree.pop();
-				Expr* l = tree.pop();
-				tree.push(new BiOperation(stackItem.getValue(), l, r));
-			}
-			else
-			{
-				st.push(stackItem);
-				break;
-			}
-		}
-		// это если унар в начале
-		if (!inItem.isBin() && st.isEmpty())
-		{
-			//------------------------------------------------------------
-			tree.push(new Number(0));
-		}
-
-		st.push(inItem);
-	}
-}
-
-
 //  # TRANSITION FUNCTION #
 
 // „етыре состо€ни€ на числа, скобки и остальное
@@ -64,30 +26,19 @@ int SyntAutomat::nextState(Word c)
 
 //	 # SYNTAXIS FUNCTIONS #
 
-// Ёто одна больша€ и сама€ встречающа€с€ функци€ - просто пуш того, что попалось. ќна в моменты когда нет никаких проблем
-void SyntAutomat::f0Push(Word word)
-{
-	inItem = word;
+void SyntAutomat::f0Push(Word word) {
+
 	if (word.isNum())
 	{
 		err_ind += word.getLen();
-		if (canPostfix)
-		{
-			//-----------------------------------------
-			tree.push(new Number(inItem.getValue()));
-		}
+		out.push(word);
 	}
-
 	else if (char(word.getValue()) == '(')
 	{
 		parOpen.push(err_ind);
 		err_ind++;
-		if (canPostfix)
-		{
-			st.push(inItem);
-		}
+		out.push(word);
 	}
-
 	else if (char(word.getValue()) == ')')
 	{
 		try {
@@ -98,43 +49,26 @@ void SyntAutomat::f0Push(Word word)
 			parClose.push(err_ind);
 		}
 		err_ind++;
-		if (canPostfix && parClose.isEmpty())
-		{
-			stackItem = st.pop();
-			while (char(stackItem.getValue()) != '(')
-			{
-				//--------------------------------------------------------------------------
-				Expr* r = tree.pop();
-				Expr* l = tree.pop();
-				tree.push(new BiOperation(stackItem.getValue(), l, r));
-				//----------------------------------------------------------------------------------
-				stackItem = st.pop();
-			}
-		}
+		out.push(word);
 	}
-	else //то есть оператор
+	else
 	{
 		err_ind++;
-		operatorWork(inItem);
+		out.push(word);
 	}
 }
 
-// ¬стретили плохой оператор (сразу пушим ошибку, а значит отрубаем постфикс)
+// ¬стретили плохой оператор (сразу пушим ошибк
 void SyntAutomat::f1OpErr(Word word)
 {
 	errs.push(err_ind);
 	err_ind++;
-	if (canPostfix)
-		canPostfix = false;
 }
 void SyntAutomat::f2OpenParErr(Word word)// плоха€ открыта€ скобка
 {
 	parOpen.push(err_ind);
 	errs.push(err_ind);
 	err_ind++;
-	if (canPostfix)
-		canPostfix = false;
-	return;
 }
 void SyntAutomat::f3CloseParErr(Word word)// плоха€ закрыта€ скобка
 {
@@ -148,15 +82,11 @@ void SyntAutomat::f3CloseParErr(Word word)// плоха€ закрыта€ скобка
 	}
 	errs.push(err_ind);
 	err_ind++;
-	if (canPostfix)
-		canPostfix = false;
 }
 void SyntAutomat::f4ValErr(Word word)// число там где не надо
 {
 	errs.push(err_ind);
 	err_ind += word.getLen();
-	if (canPostfix)
-		canPostfix = false;
 }
 void SyntAutomat::f5OpUnar(Word word)// проверка может ли быть унарным оператор
 {
@@ -164,8 +94,7 @@ void SyntAutomat::f5OpUnar(Word word)// проверка может ли быть унарным оператор
 	{
 		word.isBin() = false;
 		err_ind++;
-
-		operatorWork(word);
+		out.push(word);
 
 	}
 	else
@@ -182,10 +111,11 @@ void SyntAutomat::f6FakeFunc(Word word) // «аглушка дл€ случа€ например когда у 
 SyntAutomat::SyntAutomat()
 {
 	err_ind = 0;
-	canPostfix = true;
 	state = 0;
 	call = new SFunction * [4];
 	next = new int* [4];
+
+	out = TQueue<Word>(in.getSZ());
 	for (size_t i = 0; i < 4; i++)
 	{
 		call[i] = new SFunction[4];
@@ -250,12 +180,8 @@ SyntAutomat::SyntAutomat(const TQueue<Word> _in) {
 	parOpen = TStack<int>(in.getSZ());
 	parClose = TStack<int>(in.getSZ());
 	err_ind = 0;
-	map<char, int> priority = { {'+', 1}, {'-', 1}, {'*', 2}, {'/', 2}, {'(', 0} };
-	st = TStack<Word>(in.getSZ());
-	tree = TStack<Expr*>(in.getSZ());
-	canPostfix = true;
-	Word stackItem;
 
+	out = TQueue<Word>(in.getSZ());
 	call = new SFunction * [4];
 	next = new int* [4];
 	for (size_t i = 0; i < 4; i++)
@@ -304,6 +230,7 @@ SyntAutomat::SyntAutomat(const TQueue<Word> _in) {
 	call[3][2] = &SyntAutomat::f3CloseParErr;
 	call[3][3] = &SyntAutomat::f1OpErr;
 };
+
 SyntAutomat::SyntAutomat(const SyntAutomat& _sa)
 {
 	in = _sa.in;
@@ -325,12 +252,6 @@ SyntAutomat::SyntAutomat(const SyntAutomat& _sa)
 	parClose = _sa.parClose;
 
 	err_ind = _sa.err_ind;
-	priority = _sa.priority;
-
-	st = _sa.st;
-	canPostfix = _sa.canPostfix;
-	stackItem = _sa.stackItem;
-	inItem = _sa.inItem;
 }
 
 SyntAutomat& SyntAutomat::operator=(const SyntAutomat _sa)
@@ -363,12 +284,6 @@ SyntAutomat& SyntAutomat::operator=(const SyntAutomat _sa)
 	parClose = _sa.parClose;
 
 	err_ind = _sa.err_ind;
-	priority = _sa.priority;
-
-	st = _sa.st;
-	canPostfix = _sa.canPostfix;
-	stackItem = _sa.stackItem;
-	inItem = _sa.inItem;
 
 	return *this;
 }
@@ -386,41 +301,23 @@ void SyntAutomat::run()
 	while (!parOpen.isEmpty())
 	{
 		errs.push(parOpen.pop());
-		if (canPostfix)
-			canPostfix = false;
 	}
 
 	while (!parClose.isEmpty())
 	{
 		errs.push(parClose.pop());
-		if (canPostfix)
-			canPostfix = false;
 	}
 
 	//” нас есть последнее состо€ние и логично если там скобка открыта или операторы - то что-то не так
 	if (state == 3 || state == 0)
 	{
 		errs.push(--err_ind);
-		if (canPostfix)
-			canPostfix = false;
 	}
 
 	if (!errs.isEmpty())
 	{
 		throw - 2;
 	}
-
-	//postfix 
-	while (!st.isEmpty())
-	{
-		stackItem = st.pop();
-		//------------------------------------------------------------
-		Expr* r = tree.pop();
-		Expr* l = tree.pop();
-		tree.push(new BiOperation(stackItem.getValue(), l, r));
-		//-----------------------------------------------------------
-	}
-	root = tree.pop();
 }
 
 TQueue<Word> SyntAutomat::getInfix()
@@ -428,8 +325,11 @@ TQueue<Word> SyntAutomat::getInfix()
 	return in;
 }
 
-
 TQueue<int> SyntAutomat::getErrors()
 {
 	return errs;
+}
+
+TQueue<Word> SyntAutomat::getOut() {
+	return out;
 }

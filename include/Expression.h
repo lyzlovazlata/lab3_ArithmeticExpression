@@ -13,11 +13,8 @@ class Expression {
 
 	string in;
 	TQueue<Word> infix;
-	//------------------------------------------------------------------------------------
 	Expr* treeRoot;
-	//------------------------------------------------------------------------------------
 	int res;
-	//Expr* buildTree(TQueue<Word> postfix);
 public:
 	Expression(string _in);
 	Expression(const Expression& expr);

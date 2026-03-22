@@ -1,7 +1,8 @@
 #pragma once
 #include <string>
-using namespace std;
+#include <ostream>
 
+using namespace std;
 
 /*
 Класс для хранения слова
