@@ -1,11 +1,12 @@
 #pragma once
+#include "IMap.h"
 #include "AVLTree.h"
+
 template <typename K, typename V>
 struct MapPair {
     K key;
     V value;
 
-    MapPair() = default;
     MapPair(const K& k, const V& v) : key(k), value(v) {}
 
     bool operator<(const MapPair& other) const {
@@ -21,12 +22,10 @@ struct MapPair {
     }
 };
 
-
 template <typename K, typename V>
-class AVLMap {
+class AVLMap : public IMap<K, V> {
 private:
     AVLTree<MapPair<K, V>> tree;
-
     using NodeT = Node<MapPair<K, V>>;
 
     NodeT* find(NodeT* cur, const K& key) const {
@@ -42,13 +41,13 @@ private:
 
 public:
     AVLMap() = default;
+    ~AVLMap() override = default;
 
     // вставка
-    void insert(const K& key, const V& value) {
+    void insert(const K& key, const V& value) override {
         NodeT* node = find(tree.root, key);
 
         if (node) {
-            // если ключ уже есть — обновляем значение
             node->val.value = value;
         }
         else {
@@ -56,8 +55,8 @@ public:
         }
     }
 
-    // доступ как в std::map
-    V& operator[](const K& key) {
+    // operator[]
+    V& operator[](const K& key) override {
         NodeT* node = find(tree.root, key);
 
         if (!node) {
@@ -68,20 +67,26 @@ public:
         return node->val.value;
     }
 
-    // поиск
-    bool contains(const K& key) const {
+    // contains
+    bool contains(const K& key) const override {
         return find(tree.root, key) != nullptr;
     }
 
-    // получение (с проверкой)
-    V* get(const K& key) {
+    // get
+    V* get(const K& key) override {
         NodeT* node = find(tree.root, key);
         if (node) return &node->val.value;
         return nullptr;
     }
 
-    // удаление
-    void erase(const K& key) {
+    // erase
+    void erase(const K& key) override {
         tree.erase(MapPair<K, V>(key, V()));
+    }
+
+    // clear
+    void clear() override {
+        tree.destroy(tree.root);
+        tree.root = nullptr;
     }
 };

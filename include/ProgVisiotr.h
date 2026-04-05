@@ -1,19 +1,22 @@
 #pragma once
-
+#include"PascalBaseVisitor.h"
 #include "IMap.h"
 #include <any>
+#include<string>
 
 
-class EvalVisitor : public PascalBaseVisitor {
+class ProgVisitor : public PascalBaseVisitor {
     IMap<std::string, double>* memory;
 
 public:
-    EvalVisitor(IMap<std::string, double>* mem) : memory(mem) {}
+    ProgVisitor(IMap<std::string, double>* mem) : memory(mem) {}
+
+
 	std::any visitExpression(PascalParser::ExpressionContext* ctx) override {
-		double result = visit(ctx->term(0));
+		double result = std::any_cast<double>(visit(ctx->term(0)));
 	
 		for (size_t i = 1; i < ctx->term().size(); ++i) {
-			double rhs = visit(ctx->term(i));
+			double rhs = std::any_cast<double>(visit(ctx->term(i)));
 	
 			if (ctx->PLUS(i - 1))
 				result += rhs;
@@ -25,10 +28,10 @@ public:
 	}
 	
 	std::any visitTerm(PascalParser::TermContext* ctx) override {
-		double result = visit(ctx->factor(0));
+		double result = std::any_cast<double>(visit(ctx->factor(0)));
 	
 		for (size_t i = 1; i < ctx->factor().size(); ++i) {
-			double rhs = visit(ctx->factor(i));
+			double rhs = std::any_cast<double>(visit(ctx->factor(i)));
 	
 			if (ctx->MULTIPLY(i - 1))
 				result *= rhs;
@@ -60,7 +63,7 @@ public:
 	
 	std::any visitAssignment(PascalParser::AssignmentContext* ctx) override {
 		std::string name = ctx->VARIABLE()->getText();
-		double value = visit(ctx->expression());
+		double value = std::any_cast<double>(visit(ctx->expression()));
 	
 		memory->insert(name, value);
 	
@@ -69,21 +72,20 @@ public:
 	}
 	
 	std::any visitWhileLoop(PascalParser::WhileLoopContext* ctx) override {
-		while (visit(ctx->condition())) {
+		while (std::any_cast<bool>(visit(ctx->condition()))) {
 			for (auto stmt : ctx->statement()) {
 				visit(stmt);
 			}
 		}
-		return 0.0;
 	}
 	
 	std::any visitCondition(PascalParser::ConditionContext* ctx) override {
-		double left = visit(ctx->expression(0));
+		double left = std::any_cast<double>(visit(ctx->expression(0)));
 	
 		if (ctx->expression().size() == 1)
 			return left != 0;
 	
-		double right = visit(ctx->expression(1));
+		double right = std::any_cast<double>(visit(ctx->expression(1)));
 	
 		if (ctx->LESS()) return left < right;
 		if (ctx->GREATER()) return left > right;
@@ -99,14 +101,12 @@ public:
 		if (ctx->assignment()) return visit(ctx->assignment());
 		if (ctx->whileLoop()) return visit(ctx->whileLoop());
 		if (ctx->expression()) return visit(ctx->expression());
-	
-		return 0.0;
+
 	}
 	
 	std::any visitProgram(PascalParser::ProgramContext* ctx) override {
 		for (auto stmt : ctx->statement()) {
 			visit(stmt);
 		}
-		return 0.0;
 	}
 };

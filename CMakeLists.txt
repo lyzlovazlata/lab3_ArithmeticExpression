@@ -26,19 +26,16 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
+add_subdirectory(parser)
 file(GLOB LIB_SRCS "${SOURCE}/*.cpp")
 file(GLOB LIB_INCLUDE "${INCLUDE}/*.h")
 add_library(${LIBRARY} STATIC ${LIB_SRCS} ${LIB_INCLUDE})
 target_include_directories(${LIBRARY} PUBLIC ${INCLUDE})
+target_link_libraries(${LIBRARY} PUBLIC parser_generated)
 
-
-add_subdirectory(parser)
 add_subdirectory(samples)
 add_subdirectory(test)
 
 
-target_link_libraries(${LIBRARY} PUBLIC parser_generated)
-
-set_property(GLOBAL PROPERTY EXPR_INCLUDEDIR ${INCLUDE})
-set_property(GLOBAL PROPERTY EXPR_ANTLR_INCLUDE ${ANTLR_INCLUDE_DIR})
-set_property(GLOBAL PROPERTY EXPR_ANTLR_LIB ${ANTLR_LIB})
+get_target_property(LIB_LOCATION ${LIBRARY} ARCHIVE_OUTPUT_DIRECTORY)
+message(STATUS "Library output dir: ${LIBRARY} -> ${LIB_LOCATION}")

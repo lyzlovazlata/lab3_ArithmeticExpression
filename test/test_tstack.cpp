@@ -1,4 +1,5 @@
-#include <gtest.h>
+#include <gtest/gtest.h>
+#include<locale.h>
 #include"TStack.h"
 
 TEST(TStack, can_create_stack_with_positive_length)
