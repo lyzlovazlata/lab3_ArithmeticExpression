@@ -77,6 +77,7 @@ public:
 				visit(stmt);
 			}
 		}
+		return 0;
 	}
 	
 	std::any visitCondition(PascalParser::ConditionContext* ctx) override {
@@ -101,12 +102,13 @@ public:
 		if (ctx->assignment()) return visit(ctx->assignment());
 		if (ctx->whileLoop()) return visit(ctx->whileLoop());
 		if (ctx->expression()) return visit(ctx->expression());
-
+		return 0;
 	}
 	
 	std::any visitProgram(PascalParser::ProgramContext* ctx) override {
 		for (auto stmt : ctx->statement()) {
 			visit(stmt);
 		}
+		return 0;
 	}
 };

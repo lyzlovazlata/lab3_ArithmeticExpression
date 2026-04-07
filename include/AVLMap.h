@@ -43,7 +43,6 @@ public:
     AVLMap() = default;
     ~AVLMap() override = default;
 
-    // вставка
     void insert(const K& key, const V& value) override {
         NodeT* node = find(tree.root, key);
 
@@ -55,7 +54,6 @@ public:
         }
     }
 
-    // operator[]
     V& operator[](const K& key) override {
         NodeT* node = find(tree.root, key);
 
@@ -67,24 +65,20 @@ public:
         return node->val.value;
     }
 
-    // contains
     bool contains(const K& key) const override {
         return find(tree.root, key) != nullptr;
     }
 
-    // get
     V* get(const K& key) override {
         NodeT* node = find(tree.root, key);
         if (node) return &node->val.value;
         return nullptr;
     }
 
-    // erase
     void erase(const K& key) override {
         tree.erase(MapPair<K, V>(key, V()));
     }
 
-    // clear
     void clear() override {
         tree.destroy(tree.root);
         tree.root = nullptr;
