@@ -10,16 +10,16 @@ struct Node {
 
     Node() : left(nullptr), right(nullptr), val(), height(0) {}
     Node(const T& _val) : left(nullptr), right(nullptr), val(_val), height(0) {}
+
+    friend ostream& operator<<(ostream& os, const Node& n)
+    {
+        os << n.val;
+        return os;
+    }
 };
 
 template <typename T>
 class AVLTree {
-public:
-    Node<T>* root;
-
-    AVLTree() : root(nullptr) {}
-
-    // почти все методы посмтроены на рекурсии 
 
     // это  ме=тоды для того чтобы сделать конструктор копирования и равно (мне покащалось что рекурсию лучше все же вынести в другое место)
     Node<T>* copyTree(Node<T>* cur) {
@@ -33,29 +33,6 @@ public:
         return n;
     }
 
-    void destroy(Node<T>* cur) {
-        if (!cur) return;
-        destroy(cur->left);
-        destroy(cur->right);
-        delete cur;
-    }
-    // это база
-
-    AVLTree(const AVLTree& other) {
-        root = copyTree(other.root);
-    }
-
-    AVLTree& operator=(const AVLTree& other) {
-        if (this != &other) {
-            destroy(root);
-            root = copyTree(other.root);
-        }
-        return *this;
-    }
-
-    ~AVLTree() {
-        destroy(root);
-    }
 
     // на паре мы сделали это в одном но мне кажется лучше разделить
 
@@ -72,7 +49,6 @@ public:
     int getDiff(Node<T>* cur) const {
         return getHeight(cur->right) - getHeight(cur->left);
     }
-
     // малый левый (райт райт - просто ухожит в право)
     Node<T>* SLRotate(Node<T>* cur) {
         if (!cur || getDiff(cur) < 2 || getDiff(cur->right) < 0) return cur;
@@ -142,8 +118,6 @@ public:
         return cur;
     }
 
-    // наверное в прайват часть? стоит ли это в целом разделять?
-
     Node<T>* insert(Node<T>* cur, const T& val) {
         if (!cur) return new Node<T>(val);
 
@@ -152,11 +126,6 @@ public:
 
         return rebalance(cur);
     }
-
-    void insert(const T& val) {
-        root = insert(root, val);
-    }
-
     Node<T>* erase(Node<T>* cur, const T& val) { // удаление элемента
         if (!cur) return nullptr;
 
@@ -199,9 +168,81 @@ public:
         return rebalance(cur);
     }
 
+    void LRTgoRECSTREAM(Node<T>* cur, ostream& os) const {
+        if (!cur) return;
+        LRTgoRECSTREAM(cur->left, os);
+        LRTgoRECSTREAM(cur->right, os);
+        os << cur->val << " ";
+    }
+
+    void LRTgoSTREAM(ostream& os) const {
+        LRTgoRECSTREAM(root, os);
+    }
+
+public:
+    Node<T>* root;
+
+    AVLTree() : root(nullptr) {}
+    Node<T>* find(Node<T>* cur, const T& val) const {
+        if (!cur) return nullptr;
+
+        if (val < cur->val)
+            return find(cur->left, val);
+        if (val > cur->val)
+            return find(cur->right, val);
+
+        return cur;
+    }
+
+    friend ostream& operator<<(ostream& os, const AVLTree& tree) {
+        tree.LRTgoSTREAM(os);
+        return os;
+    }
+
+    void destroy(Node<T>* cur) {
+        if (!cur) return;
+        destroy(cur->left);
+        destroy(cur->right);
+        delete cur;
+    }
+
+    // почти все методы посмтроены на рекурсии 
+
+
+    // это база
+
+    AVLTree(const AVLTree& other) {
+        root = copyTree(other.root);
+    }
+
+    AVLTree& operator=(const AVLTree& other) {
+        if (this != &other) {
+            destroy(root);
+            root = copyTree(other.root);
+        }
+        return *this;
+    }
+
+    ~AVLTree() {
+        destroy(root);
+    }
+
+
+
+
+    void insert(const T& val) {
+        root = insert(root, val);
+    }
+
+
+
     void erase(const T& val) {
         root = erase(root, val);
     }
 
+
+    Node<T>* find(const T& val) {
+        return find(root, val);
+    }
 
 };

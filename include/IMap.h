@@ -1,5 +1,9 @@
 #pragma once
+#include<iostream>
+using namespace std;
 
+// Интерфейс мап, т.к. делать они будут одно и то же просто посмтроены на разном
+// потом еще добавлю методов на распечатку например какую-то но пока вот такое черновое
 template <typename K, typename V>
 class IMap {
 public:
@@ -9,11 +13,20 @@ public:
 
     virtual V& operator[](const K& key) = 0;
 
-    virtual bool contains(const K& key) const = 0;
+    virtual bool contains(const K& key) = 0;
 
     virtual V* get(const K& key) = 0;
 
     virtual void erase(const K& key) = 0;
 
     virtual void clear() = 0;
+
+    virtual void print(ostream& os) const = 0;
+
+    friend ostream& operator<<(ostream& os, const IMap& im)
+    {
+        im.print(os);
+        return os;
+    }
+
 };

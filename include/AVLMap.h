@@ -8,6 +8,7 @@ struct MapPair {
     V value;
 
     MapPair(const K& k, const V& v) : key(k), value(v) {}
+    // по хорошему бы сделать компаратор но пока оствлю так
 
     bool operator<(const MapPair& other) const {
         return key < other.key;
@@ -20,6 +21,12 @@ struct MapPair {
     bool operator==(const MapPair& other) const {
         return key == other.key;
     }
+
+    friend ostream& operator<<(ostream& os, const MapPair& mp)
+    {
+        os << mp.key << "=" << mp.value << " ";
+        return os;
+    }
 };
 
 template <typename K, typename V>
@@ -28,24 +35,41 @@ private:
     AVLTree<MapPair<K, V>> tree;
     using NodeT = Node<MapPair<K, V>>;
 
-    NodeT* find(NodeT* cur, const K& key) const {
-        if (!cur) return nullptr;
-
-        if (key < cur->val.key)
-            return find(cur->left, key);
-        else if (key > cur->val.key)
-            return find(cur->right, key);
-        else
-            return cur;
-    }
 
 public:
     AVLMap() = default;
     ~AVLMap() override = default;
+    AVLMap(const AVLMap& other) : tree(other.tree) {}
+
+    AVLMap& operator=(const AVLMap& other) {
+        if (this != &other) {
+            tree = other.tree;
+        }
+        return *this;
+    }
+
+    void print(ostream& os) const override {
+        os << tree << " ";
+    }
+
+
+    NodeT* find(const K& key) {
+        return tree.find(tree.root, MapPair<K, V>(key, V()));
+    }
+
+    V& operator[](const K& key) override {
+        NodeT* node = find(key);
+
+        if (!node) {
+            tree.insert(MapPair<K, V>(key, V()));
+            node = find(key);
+        }
+
+        return node->val.value;
+    }
 
     void insert(const K& key, const V& value) override {
-        NodeT* node = find(tree.root, key);
-
+        NodeT* node = find(key);
         if (node) {
             node->val.value = value;
         }
@@ -54,26 +78,15 @@ public:
         }
     }
 
-    V& operator[](const K& key) override {
-        NodeT* node = find(tree.root, key);
-
-        if (!node) {
-            tree.insert(MapPair<K, V>(key, V()));
-            node = find(tree.root, key);
-        }
-
-        return node->val.value;
-    }
-
-    bool contains(const K& key) const override {
-        return find(tree.root, key) != nullptr;
+    bool contains(const K& key) override {
+        return find(key) != nullptr;
     }
 
     V* get(const K& key) override {
-        NodeT* node = find(tree.root, key);
-        if (node) return &node->val.value;
-        return nullptr;
+        NodeT* node = find(key);
+        return node ? &node->val.value : nullptr;
     }
+
 
     void erase(const K& key) override {
         tree.erase(MapPair<K, V>(key, V()));

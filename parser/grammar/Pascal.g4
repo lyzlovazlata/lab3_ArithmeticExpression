@@ -1,6 +1,5 @@
 grammar Pascal;
 
-// ---------- PARSER RULES ----------
 program : statement* EOF ;
 
 statement : assignment SEMICOLON
@@ -24,7 +23,6 @@ factor : INTEGER
        | '(' expression ')'
        ;
 
-// ---------- TOKENS ----------
 PLUS       : '+' ;
 MINUS      : '-' ;
 MULTIPLY   : '*' ;
