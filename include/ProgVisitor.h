@@ -16,12 +16,12 @@ public:
 		double result = std::any_cast<double>(visit(ctx->term(0)));
 	
 		for (size_t i = 1; i < ctx->term().size(); ++i) {
-			double rhs = std::any_cast<double>(visit(ctx->term(i)));
+			double hz = std::any_cast<double>(visit(ctx->term(i)));
 	
 			if (ctx->PLUS(i - 1))
-				result += rhs;
+				result += hz;
 			else
-				result -= rhs;
+				result -= hz;
 		}
 	
 		return result;
@@ -31,12 +31,12 @@ public:
 		double result = std::any_cast<double>(visit(ctx->factor(0)));
 	
 		for (size_t i = 1; i < ctx->factor().size(); ++i) {
-			double rhs = std::any_cast<double>(visit(ctx->factor(i)));
+			double hzhz = std::any_cast<double>(visit(ctx->factor(i)));
 	
 			if (ctx->MULTIPLY(i - 1))
-				result *= rhs;
+				result *= hzhz;
 			else
-				result /= rhs;
+				result /= hzhz;
 		}
 	
 		return result;
@@ -53,7 +53,7 @@ public:
 			std::string name = ctx->VARIABLE()->getText();
 	
 			if (!memory->contains(name))
-				throw std::runtime_error("Undefined variable: " + name);
+				throw std::runtime_error("what a variable???: " + name);
 	
 			return (*memory)[name];
 		}
@@ -64,9 +64,7 @@ public:
 	std::any visitAssignment(PascalParser::AssignmentContext* ctx) override {
 		std::string name = ctx->VARIABLE()->getText();
 		double value = std::any_cast<double>(visit(ctx->expression()));
-	
 		memory->insert(name, value);
-	
 		return value;
 	
 	}
@@ -87,15 +85,13 @@ public:
 			return left != 0;
 	
 		double right = std::any_cast<double>(visit(ctx->expression(1)));
-	
-		if (ctx->LESS()) return left < right;
+			if (ctx->LESS()) return left < right;
 		if (ctx->GREATER()) return left > right;
 		if (ctx->EQUALS()) return left == right;
 		if (ctx->LESS_EQ()) return left <= right;
 		if (ctx->GREATER_EQ()) return left >= right;
 		if (ctx->NOT_EQ()) return left != right;
-	
-		return false;
+			return false;
 	}
 	
 	std::any visitStatement(PascalParser::StatementContext* ctx) override {

@@ -22,6 +22,10 @@ struct MapPair {
         return key == other.key;
     }
 
+    bool operator!=(const MapPair& other) const {
+        return key != other.key;
+    }
+
     friend ostream& operator<<(ostream& os, const MapPair& mp)
     {
         os << mp.key << "=" << mp.value << " ";
@@ -39,6 +43,8 @@ private:
 public:
     AVLMap() = default;
     ~AVLMap() override = default;
+
+
     AVLMap(const AVLMap& other) : tree(other.tree) {}
 
     AVLMap& operator=(const AVLMap& other) {
@@ -54,7 +60,7 @@ public:
 
 
     NodeT* find(const K& key) {
-        return tree.find(tree.root, MapPair<K, V>(key, V()));
+        return tree.find(MapPair<K, V>(key, V()));
     }
 
     V& operator[](const K& key) override {
@@ -84,7 +90,12 @@ public:
 
     V* get(const K& key) override {
         NodeT* node = find(key);
-        return node ? &node->val.value : nullptr;
+        if (node) {
+            return &node->val.value;
+        }
+        else {
+            return nullptr;
+        }
     }
 
 
@@ -93,7 +104,6 @@ public:
     }
 
     void clear() override {
-        tree.destroy(tree.root);
-        tree.root = nullptr;
+        tree.clear();
     }
 };

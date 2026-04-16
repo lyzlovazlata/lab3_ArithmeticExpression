@@ -11,9 +11,9 @@ using namespace std;
 		std::exception_ptr e)
 	{
 		throw std::runtime_error(
-			"Syntax error at line " + std::to_string(line) +
+			"Synt err there " + std::to_string(line) +
 			":" + std::to_string(charPositionInLine) +
-			" -> " + msg
+			" - " + msg
 		);
 	}
 
