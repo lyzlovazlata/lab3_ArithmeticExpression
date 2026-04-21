@@ -4,6 +4,7 @@
 #include "TStack.h"
 
 using namespace std;
+const size_t STACK_SIZE = 1000;
 
 template <typename T>
 struct Node {
@@ -112,7 +113,6 @@ class AVLTree {
     Node<T>* copyTree(Node<T>* otherRoot) {
         if (!otherRoot) return nullptr;
 
-        const size_t STACK_SIZE = 1000; // такой же как макс стак дай бог хватит 
         TStack<Node<T>*> otkuda(STACK_SIZE);
         TStack<Node<T>*> kuda(STACK_SIZE);
 
@@ -148,8 +148,6 @@ class AVLTree {
     // удал€ю левое, потом ѕ–ј¬ќ≈ (не топ, потому что не доберемс€ до детей)
     void destroyTree(Node<T>* root) {
         if (!root) return;
-
-        const size_t STACK_SIZE = 1000;
 
         TStack<Node<T>*> st(STACK_SIZE);
         Node<T>* cur = root;
@@ -187,7 +185,6 @@ class AVLTree {
     void LRTgoSTREAM(ostream& os) const {
         if (!root) return;
 
-        const size_t STACK_SIZE = 1000;
         TStack<Node<T>*> st(STACK_SIZE);
         Node<T>* cur = root;
         Node<T>* lastnode = nullptr;
@@ -237,7 +234,6 @@ public:
             return;
         }
 
-        const size_t STACK_SIZE = 1000;
         TStack<Node<T>*> path(STACK_SIZE);
 
         Node<T>* cur = root;
