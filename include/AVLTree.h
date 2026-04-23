@@ -109,7 +109,7 @@ class AVLTree {
         return cur;
     }
 
-    // теперь итеративнеый подход - действую через дв стека
+    // теперь итеративнеый подход - действую через два стека
     Node<T>* copyTree(Node<T>* otherRoot) {
         if (!otherRoot) return nullptr;
 
@@ -238,6 +238,8 @@ public:
 
         Node<T>* cur = root;
         while (cur) {
+
+
             path.push(cur);
             if (val < cur->val) {
                 if (!cur->left) {
@@ -297,7 +299,7 @@ public:
             path.clear();
             return;
         }
-
+        // если два потомка то ищем минимальный в поддереве
         if (cur->left && cur->right) {
             Node<T>* minParent = cur;
             Node<T>* minNode = cur->right;
@@ -310,17 +312,17 @@ public:
                 path.push(minNode);
             }
 
-            cur->val = minNode->val;
+            cur->val = minNode->val; // тут я именно присваиваю значение, а не меняю указатели
             if (!path.isEmpty() && path.top() == minNode) {
                 path.pop(); // присвоили - убрали из стека чтоб по удаленному не идти
             }
-
+            // не забыть про поддерево минимального которонго мы удалим - его надо присвоить
             Node<T>* child = minNode->right;
             if (minParent->left == minNode) minParent->left = child;
             else minParent->right = child;
             delete minNode;
         }
-        else {
+        else { // если нет или один потомок то все проще
             Node<T>* child;
             if (cur->left) child = cur->left;
             else child = cur->right;

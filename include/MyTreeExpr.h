@@ -6,26 +6,25 @@
 #include "IMap.h"
 
 using namespace std;
-
-class Expr;
-class NumberNode;
+class Number;
 class BiOperation;
-class SemicolonNode;
 class Variable;
 class Assignment;
-class Condition;
-class WhileNode;
+class Expr;
+class Semicol;
+class Cond;
+class While;
 
 
 class Visitor {
 public:
-    virtual double visitNumber(NumberNode* num) = 0;
+    virtual double visitNumber(Number* num) = 0;
     virtual double visitBiOperation(BiOperation* op) = 0;
-    virtual void visitSemicolon(SemicolonNode* sem) = 0;
+    virtual void visitAssignment(Assignment* as) = 0;    
+    virtual bool visitCondition(Cond* cond) = 0;
+    virtual void visitWhile(While* wh) = 0;
+    virtual void visitSemicolon(Semicol* sem) = 0;
     virtual double visitVariable(Variable* var) = 0;
-    virtual void visitAssignment(Assignment* as) = 0;
-    virtual bool visitCondition(Condition* cond) = 0;
-    virtual void visitWhile(WhileNode* wh) = 0;
     virtual ~Visitor() {}
 };
 
@@ -36,13 +35,67 @@ public:
     virtual ~Expr() {}
 };
 
+class BiOperation : public Expr {
+    char op_;
+    Expr* lef;
+    Expr* ri;
 
-class NumberNode : public Expr {
+public:
+    BiOperation(char op, Expr* l, Expr* r)
+        : op_(op), lef(l), ri(r) {
+    }
+
+    ~BiOperation() {
+        delete lef;
+        delete ri;
+    }
+
+    char op() { return op_; }
+    Expr* left() { return lef; }
+    Expr* right() { return ri; }
+    any accept(Visitor* v) override {
+        return v->visitBiOperation(this);
+    }
+};
+
+class Cond : public Expr {
+    string op_;
+    Expr* lef;
+    Expr* ri;
+
+public:
+    Cond(Expr* l, string op, Expr* r)
+        : lef(l), ri(r), op_(op) {
+    }
+
+    ~Cond() {
+        delete lef;
+        if (ri != nullptr) {
+            delete ri;
+        }
+    }
+
+    Expr* left() { return lef; }
+
+    Expr* right() {
+        return ri;//может быть nullptr для одиночного условия
+    }
+
+    string znak() { return op_; }
+
+    any accept(Visitor* v) override {
+        return v->visitCondition(this);
+    }
+};
+
+
+
+class Number : public Expr {
     double val;
 
 public:
-    NumberNode(int v) : val(v) {}
-    NumberNode(double v) : val(v) {}
+    Number(int v) : val(v) {}
+    Number(double v) : val(v) {}
 
     double getVal() { return val; }
 
@@ -58,7 +111,7 @@ class Variable : public Expr {
 public:
     Variable(string n) : name(n) {}
 
-    string var() { return name; }
+    string getvar() { return name; }
 
     any accept(Visitor* v) override {
         return v->visitVariable(this);
@@ -66,47 +119,24 @@ public:
 };
 
 
-class BiOperation : public Expr {
-    char op_;
-    Expr* left_;
-    Expr* right_;
-
-public:
-    BiOperation(char op, Expr* l, Expr* r)
-        : op_(op), left_(l), right_(r) {
-    }
-
-    ~BiOperation() {
-        delete left_;
-        delete right_;
-    }
-
-    char op() { return op_; }
-    Expr* left() { return left_; }
-    Expr* right() { return right_; }
-
-    any accept(Visitor* v) override {
-        return v->visitBiOperation(this);
-    }
-};
 
 
 class Assignment : public Expr {
-    Expr* left_;
-    Expr* right_;
+    Expr* lef;
+    Expr* ri;
 
 public:
     Assignment(Expr* l, Expr* r)
-        : left_(l), right_(r) {
+        : lef(l), ri(r) {
     }
 
     ~Assignment() {
-        delete left_;
-        delete right_;
+        delete lef;
+        delete ri;
     }
 
-    Expr* left() { return left_; }
-    Expr* right() { return right_; }
+    Expr* left() { return lef; }
+    Expr* right() { return ri; }
 
     any accept(Visitor* v) override {
         v->visitAssignment(this);
@@ -115,22 +145,22 @@ public:
 };
 
 
-class SemicolonNode : public Expr {
-    Expr* left_;
-    Expr* right_;
+class Semicol : public Expr {
+    Expr* lef;
+    Expr* ri;
 
 public:
-    SemicolonNode(Expr* l, Expr* r)
-        : left_(l), right_(r) {
+    Semicol(Expr* l, Expr* r)
+        : lef(l), ri(r) {
     }
 
-    ~SemicolonNode() {
-        delete left_;
-        delete right_;
+    ~Semicol() {
+        delete lef;
+        delete ri;
     }
 
-    Expr* left() { return left_; }
-    Expr* right() { return right_; }
+    Expr* left() { return lef; }
+    Expr* right() { return ri; }
 
     any accept(Visitor* v) override {
         v->visitSemicolon(this);
@@ -139,48 +169,24 @@ public:
 };
 
 
-class Condition : public Expr {
-    string op_;
-    Expr* left_;
-    Expr* right_;
+
+class While : public Expr {
+    Cond* cond_;
+    vector<Expr*> bod;
 
 public:
-    Condition(Expr* l, string op, Expr* r)
-        : left_(l), right_(r), op_(op) {
+    While(Cond* c, vector<Expr*> b)
+        : cond_(c), bod(b) {
     }
 
-    ~Condition() {
-        delete left_;
-        delete right_;
-    }
-
-    Expr* left() { return left_; }
-    Expr* right() { return right_; }
-    string znak() { return op_; }
-
-    any accept(Visitor* v) override {
-        return v->visitCondition(this);
-    }
-};
-
-
-class WhileNode : public Expr {
-    Condition* cond_;
-    vector<Expr*> body_;
-
-public:
-    WhileNode(Condition* c, vector<Expr*> b)
-        : cond_(c), body_(b) {
-    }
-
-    ~WhileNode() {
+    ~While() {
         delete cond_;
-        for (auto x : body_)
+        for (auto x : bod)
             delete x;
     }
 
-    Condition* getCondition() { return cond_; }
-    vector<Expr*>& getBody() { return body_; }
+    Cond* getCondition() { return cond_; }
+    vector<Expr*>& getBody() { return bod; }
 
     any accept(Visitor* v) override {
         v->visitWhile(this);
@@ -189,20 +195,36 @@ public:
 };
 
 
-class CalcVisitor : public Visitor {
+class CalcVis : public Visitor {
     IMap<string, double>* vars;
 
 public:
-    CalcVisitor(IMap<string, double>* m)
+    CalcVis(IMap<string, double>* m)
         : vars(m) {
     }
 
-    double visitNumber(NumberNode* num) override {
+    double visitNumber(Number* num) override {
         return num->getVal();
     }
 
     double visitVariable(Variable* var) override {
-        return *vars->get(var->var());
+        double* val = vars->get(var->getvar());
+        if (val == nullptr) {
+            throw runtime_error("var" + var->getvar() + "not here");
+        }
+        return *val;
+    }
+
+    void visitAssignment(Assignment* as) override {
+        Variable* v = dynamic_cast<Variable*>(as->left());
+        if (v == nullptr) {
+            throw runtime_error("left side must be var");
+        }
+
+        string name = v->getvar();
+        double value = any_cast<double>(as->right()->accept(this));
+
+        vars->insert(name, value);
     }
 
     double visitBiOperation(BiOperation* op) override {
@@ -213,63 +235,64 @@ public:
         case '+': return l + r;
         case '-': return l - r;
         case '*': return l * r;
-        case '/': return l / r;
+        case '/':
+            if (r == 0.0) {
+                throw runtime_error("why u devide on zero!!");
+            }
+            return l / r;
+        default:
+            throw runtime_error("tf is this op");
         }
-
-        return 0;
     }
 
-    void visitAssignment(Assignment* as) override {
-        Variable* v = dynamic_cast<Variable*>(as->left());
+    void visitWhile(While* wh) override {
+        while (true) {
+            any condResult = wh->getCondition()->accept(this);
+            bool condition = any_cast<bool>(condResult);
 
-        string name = v->var();
-        double value = any_cast<double>(as->right()->accept(this));
+            if (!condition) break;
 
-        vars->insert(name, value);
+            for (auto stmt : wh->getBody()) {
+                stmt->accept(this);
+            }
+        }
     }
 
-    void visitSemicolon(SemicolonNode* sem) override {
+    void visitSemicolon(Semicol* sem) override {
         sem->left()->accept(this);
         sem->right()->accept(this);
     }
 
-    bool visitCondition(Condition* cond) override {
+    bool visitCondition(Cond* cond) override {
         double l = any_cast<double>(cond->left()->accept(this));
 
-        if (cond->right() == nullptr)
-            return l != 0;
+        if (cond->znak().empty()) {
+            return l != 0.0;
+        }
 
         double r = any_cast<double>(cond->right()->accept(this));
-
         string op = cond->znak();
 
-        if (op == "<") return l < r;
-        if (op == ">") return l > r;
+        if (op == "<")  return l < r;
+        if (op == ">")  return l > r;
         if (op == "==") return l == r;
         if (op == "<=") return l <= r;
         if (op == ">=") return l >= r;
         if (op == "!=") return l != r;
 
-        return false;
-    }
-
-    void visitWhile(WhileNode* wh) override {
-        while (any_cast<bool>(wh->getCondition()->accept(this))) {
-            for (auto stmt : wh->getBody())
-                stmt->accept(this);
-        }
+        throw runtime_error("tf is this comp ");
     }
 };
 
-class PrintVisitor : public Visitor {
+class PrintVis : public Visitor {
 public:
-    double visitNumber(NumberNode* num) override {
+    double visitNumber(Number* num) override {
         cout << num->getVal();
         return 0;
     }
 
     double visitVariable(Variable* var) override {
-        cout << var->var();
+        cout << var->getvar();
         return 0;
     }
 
@@ -288,89 +311,38 @@ public:
         as->right()->accept(this);
     }
 
-    void visitSemicolon(SemicolonNode* sem) override {
+    void visitSemicolon(Semicol* sem) override {
         sem->left()->accept(this);
-        cout << "; ";
+        cout << ";" << endl;
         if (sem->right() != nullptr) {
             sem->right()->accept(this);
         }
     }
 
-    bool visitCondition(Condition* cond) override {
+    bool visitCondition(Cond* cond) override {
         cond->left()->accept(this);
 
-        if (cond->right()) {
-            cout << " " << cond->znak() << " ";
-            cond->right()->accept(this);
+        if (cond->znak().empty()) {
+            return false;
         }
+
+        cout << " " << cond->znak() << " ";
+        cond->right()->accept(this);
 
         return false;
     }
 
-    void visitWhile(WhileNode* wh) override {
-        cout << "while (";
+    void visitWhile(While* wh) override {
+        cout << "while ";
         wh->getCondition()->accept(this);
-        cout << ") do ";
+        cout << " do" << endl;
 
         for (auto stmt : wh->getBody()) {
+            cout << "  ";
             stmt->accept(this);
-            cout << "; ";
+            cout << ";" << endl;
         }
 
         cout << "end";
-    }
-};
-
-
-class PrintPostfixVisitor : public Visitor {
-public:
-    double visitNumber(NumberNode* num) override {
-        cout << num->getVal() << " ";
-        return 0;
-    }
-
-    double visitVariable(Variable* var) override {
-        cout << var->var() << " ";
-        return 0;
-    }
-
-    double visitBiOperation(BiOperation* op) override {
-        op->left()->accept(this);
-        op->right()->accept(this);
-        cout << op->op() << " ";
-        return 0;
-    }
-
-    void visitAssignment(Assignment* as) override {
-        as->left()->accept(this);
-        as->right()->accept(this);
-        cout << "= ";
-    }
-
-    void visitSemicolon(SemicolonNode* sem) override {
-        sem->left()->accept(this);
-        cout << "; ";
-        if (sem->right() != nullptr) {
-            sem->right()->accept(this);
-        }
-    }
-
-    bool visitCondition(Condition* cond) override {
-        cond->left()->accept(this);
-
-        if (cond->right())
-            cond->right()->accept(this);
-
-        cout << cond->znak() << " ";
-        return false;
-    }
-
-    void visitWhile(WhileNode* wh) override {
-        wh->getCondition()->accept(this);
-
-        for (auto stmt : wh->getBody())
-            stmt->accept(this);
-
-        cout << "while ";
     }
 };

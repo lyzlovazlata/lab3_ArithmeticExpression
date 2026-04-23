@@ -15,36 +15,25 @@ int main()
 {
     setlocale(LC_ALL, "Ru");
 
-    string input = "a = 5; b = a + 3 * 2; a = 0; while (a<5) do a = a+2; end;";
-
+    string input = "aboba = 20; labuba = 1; while (labuba<5) do aboba = aboba +1; labuba = labuba +1;end;";
     ANTLRInputStream inputStream(input);
     PascalLexer lexer(&inputStream);
     CommonTokenStream tokens(&lexer);
     PascalParser parser(&tokens);
-
     auto tree = parser.program();
-
     TreeBuilderVisitor builder;
     Expr* my_tree = any_cast<Expr*>(builder.visitProgram(tree));
-
-    cout << "TREE: ";
-    PrintVisitor printer;
+    cout << "tree ";
+    PrintVis printer;
     my_tree->accept(&printer);
     cout << endl;
 
-    cout << "TREE Postfix: ";
-    PrintPostfixVisitor printerpostfix;
-    my_tree->accept(&printerpostfix);
-    cout << endl;
-
-    cout << "Executing:" << endl;
+    cout << "after calcing we have" << endl;
 
     AVLMap<string, double>* my_map = new AVLMap<string, double>();
-    CalcVisitor calculator(my_map);
+    CalcVis calculator(my_map);
     my_tree->accept(&calculator);
-
     cout << *my_map;
-
     delete my_map;
     return 0;
 }
