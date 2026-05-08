@@ -10,7 +10,7 @@ class TreeBuilderVisitor : public PascalBaseVisitor {
     string comp(PascalParser::ConditionContext* ctx) {
         if (ctx->LESS()) return "<";
         else if (ctx->GREATER()) return ">";
-        else if (ctx->EQUALS()) return "==";
+        else if (ctx->EQUALS()) return "=";
         else if (ctx->LESS_EQ()) return "<=";
         else if (ctx->GREATER_EQ()) return ">=";
         else if (ctx->NOT_EQ()) return "!=";
@@ -82,7 +82,7 @@ public:
 
     any visitIfcond(PascalParser::IfcondContext* ctx) override {
         Expr* condExpr = toexp(visit(ctx->condition()));
-        Cond* cond = (Cond*)condExpr;
+        Cond* cond = dynamic_cast<Cond*>(condExpr);
 
         vector<Expr*> thenBody;
         vector<Expr*> elseBody;
