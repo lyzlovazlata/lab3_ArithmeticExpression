@@ -14,7 +14,7 @@ class Expr;
 class Semicol;
 class Cond;
 class While;
-
+class IfCond;
 
 class Visitor {
 public:
@@ -23,6 +23,7 @@ public:
     virtual void visitAssignment(Assignment* as) = 0;    
     virtual bool visitCondition(Cond* cond) = 0;
     virtual void visitWhile(While* wh) = 0;
+	virtual void visitIfCond(IfCond* ifc) = 0;
     virtual void visitSemicolon(Semicol* sem) = 0;
     virtual double visitVariable(Variable* var) = 0;
     virtual ~Visitor() {}
@@ -51,7 +52,7 @@ public:
     }
 
     char op() { return op_; }
-    Expr* left() { return lef; }
+    Expr* left();
     Expr* right() { return ri; }
     any accept(Visitor* v) override {
         return v->visitBiOperation(this);
@@ -194,6 +195,33 @@ public:
     }
 };
 
+class IfCond : public Expr {
+    Cond* cond_;
+    vector<Expr*> thenBody_;
+    vector<Expr*> elseBody_;
+
+public:
+    IfCond(Cond* c, vector<Expr*> thenBody, vector<Expr*> elseBody)
+        : cond_(c), thenBody_(thenBody), elseBody_(elseBody) {
+    }
+
+    ~IfCond() {
+        delete cond_;
+        for (auto x : thenBody_) delete x;
+        for (auto x : elseBody_) delete x;
+    }
+
+    Cond* getCondition() { return cond_; }
+    vector<Expr*>& getThenBody() { return thenBody_; }
+    vector<Expr*>& getElseBody() { return elseBody_; }
+
+    any accept(Visitor* v) override {
+        v->visitIfCond(this);
+        return {};
+    }
+};
+
+
 
 class CalcVis : public Visitor {
     IMap<string, double>* vars;
@@ -261,6 +289,15 @@ public:
     void visitSemicolon(Semicol* sem) override {
         sem->left()->accept(this);
         sem->right()->accept(this);
+    }
+
+    void visitIfCond(IfCond* ifc) override {
+        bool condition = any_cast<bool>(ifc->getCondition()->accept(this));
+        // тяжко было с этой ссылкой, удалось все замутить тернарным оператором который мне благополучно все инициализировал
+        vector<Expr*>& body = condition ? ifc->getThenBody() : ifc->getElseBody();
+        for (auto stmt : body) {
+            stmt->accept(this);
+        }
     }
 
     bool visitCondition(Cond* cond) override {
@@ -341,6 +378,28 @@ public:
             cout << "  ";
             stmt->accept(this);
             cout << ";" << endl;
+        }
+
+        cout << "end";
+    }
+	    void visitIfCond(IfCond* ifc) override {
+        cout << "if ";
+        ifc->getCondition()->accept(this);
+        cout << " do" << endl;
+
+        for (auto stmt : ifc->getThenBody()) {
+            cout << "  ";
+            stmt->accept(this);
+            cout << ";" << endl;
+        }
+
+        if (!ifc->getElseBody().empty()) {
+            cout << "else" << endl;
+            for (auto stmt : ifc->getElseBody()) {
+                cout << "  ";
+                stmt->accept(this);
+                cout << ";" << endl;
+            }
         }
 
         cout << "end";

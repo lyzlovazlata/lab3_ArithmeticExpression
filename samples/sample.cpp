@@ -15,7 +15,7 @@ int main()
 {
     setlocale(LC_ALL, "Ru");
 
-    string input = "aboba = 20; labuba = 1; while (labuba<5) do aboba = aboba +1; labuba = labuba +1;end;";
+    string input = "x = 5; y = 2; z = 0; while (x > 0) do z = z + y * 2; if (z >= 10) do y = y + 1; else y = y - 1; end; x = x - 1; end; result = z + y;";
     ANTLRInputStream inputStream(input);
     PascalLexer lexer(&inputStream);
     CommonTokenStream tokens(&lexer);

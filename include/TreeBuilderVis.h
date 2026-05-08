@@ -46,6 +46,9 @@ public:
         if (ctx->whileLoop()) {
             return (Expr*)toexp(visit(ctx->whileLoop()));
         }
+        if (ctx->ifcond()) {
+            return (Expr*)toexp(visit(ctx->ifcond()));
+        }
 
         if (ctx->expression()) {
             return (Expr*)toexp(visit(ctx->expression()));
@@ -77,6 +80,27 @@ public:
         return (Expr*)new While(cond, body);
     }
 
+    any visitIfcond(PascalParser::IfcondContext* ctx) override {
+        Expr* condExpr = toexp(visit(ctx->condition()));
+        Cond* cond = (Cond*)condExpr;
+
+        vector<Expr*> thenBody;
+        vector<Expr*> elseBody;
+
+        for (auto stmt : ctx->thenBranch->statement()) {
+            Expr* e = toexp(visit(stmt));
+            if (e) thenBody.push_back(e);
+        }
+
+        if (ctx->elseBranch != nullptr) {
+            for (auto stmt : ctx->elseBranch->statement()) {
+                Expr* e = toexp(visit(stmt));
+                if (e) elseBody.push_back(e);
+            }
+        }
+
+        return (Expr*)new IfCond(cond, thenBody, elseBody);
+    }
     any visitCondition(PascalParser::ConditionContext* ctx) override {
         Expr* left = toexp(visit(ctx->expression(0)));
         if (ctx->expression().size() == 1) {

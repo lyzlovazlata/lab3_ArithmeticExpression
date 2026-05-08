@@ -13,14 +13,15 @@ class  PascalParser : public antlr4::Parser {
 public:
   enum {
     T__0 = 1, T__1 = 2, PLUS = 3, MINUS = 4, MULTIPLY = 5, DEVIDE = 6, SEMICOLON = 7, 
-    EQUALS = 8, WHILE = 9, DO = 10, END = 11, LESS = 12, GREATER = 13, LESS_EQ = 14, 
-    GREATER_EQ = 15, NOT_EQ = 16, VARIABLE = 17, DOUBLE = 18, INTEGER = 19, 
-    WS = 20
+    EQUALS = 8, IF = 9, ELSE = 10, WHILE = 11, DO = 12, END = 13, LESS = 14, 
+    GREATER = 15, LESS_EQ = 16, GREATER_EQ = 17, NOT_EQ = 18, VARIABLE = 19, 
+    DOUBLE = 20, INTEGER = 21, WS = 22
   };
 
   enum {
     RuleProgram = 0, RuleStatement = 1, RuleAssignment = 2, RuleWhileLoop = 3, 
-    RuleCondition = 4, RuleExpression = 5, RuleTerm = 6, RuleFactor = 7
+    RuleIfcond = 4, RuleBlock = 5, RuleCondition = 6, RuleExpression = 7, 
+    RuleTerm = 8, RuleFactor = 9
   };
 
   explicit PascalParser(antlr4::TokenStream *input);
@@ -44,6 +45,8 @@ public:
   class StatementContext;
   class AssignmentContext;
   class WhileLoopContext;
+  class IfcondContext;
+  class BlockContext;
   class ConditionContext;
   class ExpressionContext;
   class TermContext;
@@ -71,6 +74,7 @@ public:
     AssignmentContext *assignment();
     antlr4::tree::TerminalNode *SEMICOLON();
     WhileLoopContext *whileLoop();
+    IfcondContext *ifcond();
     ExpressionContext *expression();
 
 
@@ -112,6 +116,41 @@ public:
   };
 
   WhileLoopContext* whileLoop();
+
+  class  IfcondContext : public antlr4::ParserRuleContext {
+  public:
+    PascalParser::BlockContext *thenBranch = nullptr;
+    PascalParser::BlockContext *elseBranch = nullptr;
+    IfcondContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *IF();
+    ConditionContext *condition();
+    antlr4::tree::TerminalNode *DO();
+    antlr4::tree::TerminalNode *END();
+    std::vector<BlockContext *> block();
+    BlockContext* block(size_t i);
+    antlr4::tree::TerminalNode *ELSE();
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  IfcondContext* ifcond();
+
+  class  BlockContext : public antlr4::ParserRuleContext {
+  public:
+    BlockContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<StatementContext *> statement();
+    StatementContext* statement(size_t i);
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  BlockContext* block();
 
   class  ConditionContext : public antlr4::ParserRuleContext {
   public:

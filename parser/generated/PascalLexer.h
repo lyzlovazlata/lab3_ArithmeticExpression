@@ -13,9 +13,9 @@ class  PascalLexer : public antlr4::Lexer {
 public:
   enum {
     T__0 = 1, T__1 = 2, PLUS = 3, MINUS = 4, MULTIPLY = 5, DEVIDE = 6, SEMICOLON = 7, 
-    EQUALS = 8, WHILE = 9, DO = 10, END = 11, LESS = 12, GREATER = 13, LESS_EQ = 14, 
-    GREATER_EQ = 15, NOT_EQ = 16, VARIABLE = 17, DOUBLE = 18, INTEGER = 19, 
-    WS = 20
+    EQUALS = 8, IF = 9, ELSE = 10, WHILE = 11, DO = 12, END = 13, LESS = 14, 
+    GREATER = 15, LESS_EQ = 16, GREATER_EQ = 17, NOT_EQ = 18, VARIABLE = 19, 
+    DOUBLE = 20, INTEGER = 21, WS = 22
   };
 
   explicit PascalLexer(antlr4::CharStream *input);

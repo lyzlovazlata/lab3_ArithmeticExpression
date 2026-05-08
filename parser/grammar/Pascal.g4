@@ -4,12 +4,17 @@ program : statement* EOF ;
 
 statement : assignment SEMICOLON
           | whileLoop SEMICOLON
+          | ifcond SEMICOLON
           | expression SEMICOLON
           ;
 
 assignment : VARIABLE '=' expression ;
 
 whileLoop : WHILE '(' condition ')' DO statement* END ;
+
+ifcond : IF '(' condition ')' DO thenBranch=block (ELSE elseBranch=block)? END ;
+
+block : statement* ;
 
 condition : expression ( (LESS | GREATER | EQUALS | LESS_EQ | GREATER_EQ | NOT_EQ) expression )? ;
 
@@ -29,6 +34,8 @@ MULTIPLY   : '*' ;
 DEVIDE     : '/' ;
 SEMICOLON  : ';' ;
 EQUALS     : '=' ;
+IF         : 'if' ;
+ELSE       : 'else' ;
 WHILE      : 'while' ;
 DO         : 'do' ;
 END        : 'end' ;

@@ -31,6 +31,14 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual std::any visitIfcond(PascalParser::IfcondContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitBlock(PascalParser::BlockContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual std::any visitCondition(PascalParser::ConditionContext *ctx) override {
     return visitChildren(ctx);
   }

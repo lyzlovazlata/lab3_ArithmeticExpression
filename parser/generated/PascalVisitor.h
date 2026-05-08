@@ -27,6 +27,10 @@ public:
 
     virtual std::any visitWhileLoop(PascalParser::WhileLoopContext *context) = 0;
 
+    virtual std::any visitIfcond(PascalParser::IfcondContext *context) = 0;
+
+    virtual std::any visitBlock(PascalParser::BlockContext *context) = 0;
+
     virtual std::any visitCondition(PascalParser::ConditionContext *context) = 0;
 
     virtual std::any visitExpression(PascalParser::ExpressionContext *context) = 0;
