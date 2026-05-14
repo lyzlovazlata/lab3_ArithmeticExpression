@@ -5,12 +5,13 @@
 #define __BITFIELD_H__
 
 #include <iostream>
+#include <cmath>
 
 using namespace std;
 
 typedef unsigned int TELEM;
 int const bitsInTELEM = sizeof(TELEM) * 8; // как в моей реализации класса - добавлю переменную для битов слова
-int const bytesInTELEM = (int)log2(bitsInTELEM); // а так же колво байтов
+int const bytesInTELEM = (int)std::log2(bitsInTELEM); // а так же колво байтов
 
 class TBitField
 {

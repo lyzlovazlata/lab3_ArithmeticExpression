@@ -6,7 +6,7 @@
 #include "PascalParser.h"
 #include "TreeBuilderVis.h"
 #include "MyTreeExpr.h"
-#include "AVLMap.h"
+#include "HTable.h"
 
 using namespace antlr4;
 using namespace std;
@@ -30,7 +30,7 @@ int main()
 
     cout << "after calcing we have" << endl;
 
-    AVLMap<string, double>* my_map = new AVLMap<string, double>();
+    HTable<string, double>* my_map = new HTable<string, double>();
     CalcVis calculator(my_map);
     my_tree->accept(&calculator);
     cout << *my_map;
