@@ -173,21 +173,20 @@ public:
 
 class While : public Expr {
     Cond* cond_;
-    vector<Expr*> bod;
+    Expr* body_;
 
 public:
-    While(Cond* c, vector<Expr*> b)
-        : cond_(c), bod(b) {
+    While(Cond* c, Expr* b)
+        : cond_(c), body_(b) {
     }
 
     ~While() {
         delete cond_;
-        for (auto x : bod)
-            delete x;
+        delete body_;
     }
 
     Cond* getCondition() { return cond_; }
-    vector<Expr*>& getBody() { return bod; }
+    Expr* getBody() { return body_; }
 
     any accept(Visitor* v) override {
         v->visitWhile(this);
@@ -197,23 +196,23 @@ public:
 
 class IfCond : public Expr {
     Cond* cond_;
-    vector<Expr*> thenBody_;
-    vector<Expr*> elseBody_;
+    Expr* thenBody_;
+    Expr* elseBody_;
 
 public:
-    IfCond(Cond* c, vector<Expr*> thenBody, vector<Expr*> elseBody)
+    IfCond(Cond* c, Expr* thenBody, Expr* elseBody)
         : cond_(c), thenBody_(thenBody), elseBody_(elseBody) {
     }
 
     ~IfCond() {
         delete cond_;
-        for (auto x : thenBody_) delete x;
-        for (auto x : elseBody_) delete x;
+        delete thenBody_;
+        delete elseBody_;
     }
 
     Cond* getCondition() { return cond_; }
-    vector<Expr*>& getThenBody() { return thenBody_; }
-    vector<Expr*>& getElseBody() { return elseBody_; }
+    Expr* getThenBody() { return thenBody_; }
+    Expr* getElseBody() { return elseBody_; }
 
     any accept(Visitor* v) override {
         v->visitIfCond(this);
@@ -225,6 +224,14 @@ public:
 
 class CalcVis : public Visitor {
     IMap<string, double>* vars;
+    int stepNo = 1;
+
+    void pauseStep() {
+        cout << "step " << stepNo++ << " vars now:" << endl;
+        cout << *vars << endl;
+        cout << "press Enter" << endl;
+        cin.get();
+    }
 
 public:
     CalcVis(IMap<string, double>* m)
@@ -279,24 +286,23 @@ public:
             bool condition = any_cast<bool>(condResult);
 
             if (!condition) break;
-
-            for (auto stmt : wh->getBody()) {
-                stmt->accept(this);
+            if (wh->getBody() != nullptr) {
+                wh->getBody()->accept(this);
             }
         }
     }
 
     void visitSemicolon(Semicol* sem) override {
         sem->left()->accept(this);
+        pauseStep();
         sem->right()->accept(this);
     }
 
     void visitIfCond(IfCond* ifc) override {
         bool condition = any_cast<bool>(ifc->getCondition()->accept(this));
-        // тяжко было с этой ссылкой, удалось все замутить тернарным оператором который мне благополучно все инициализировал
-        vector<Expr*>& body = condition ? ifc->getThenBody() : ifc->getElseBody();
-        for (auto stmt : body) {
-            stmt->accept(this);
+        Expr* body = condition ? ifc->getThenBody() : ifc->getElseBody();
+        if (body != nullptr) {
+            body->accept(this);
         }
     }
 
@@ -374,10 +380,9 @@ public:
         wh->getCondition()->accept(this);
         cout << " do" << endl;
 
-        for (auto stmt : wh->getBody()) {
+        if (wh->getBody() != nullptr) {
             cout << "  ";
-            stmt->accept(this);
-            cout << ";" << endl;
+            wh->getBody()->accept(this);
         }
 
         cout << "end";
@@ -387,19 +392,15 @@ public:
         ifc->getCondition()->accept(this);
         cout << " do" << endl;
 
-        for (auto stmt : ifc->getThenBody()) {
+        if (ifc->getThenBody() != nullptr) {
             cout << "  ";
-            stmt->accept(this);
-            cout << ";" << endl;
+            ifc->getThenBody()->accept(this);
         }
 
-        if (!ifc->getElseBody().empty()) {
+        if (ifc->getElseBody() != nullptr) {
             cout << "else" << endl;
-            for (auto stmt : ifc->getElseBody()) {
-                cout << "  ";
-                stmt->accept(this);
-                cout << ";" << endl;
-            }
+            cout << "  ";
+            ifc->getElseBody()->accept(this);
         }
 
         cout << "end";

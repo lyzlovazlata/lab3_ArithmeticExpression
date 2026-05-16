@@ -28,11 +28,10 @@ int main()
     my_tree->accept(&printer);
     cout << endl;
 
-    cout << "after calcing we have" << endl;
-
     HTable<string, double>* my_map = new HTable<string, double>();
     CalcVis calculator(my_map);
     my_tree->accept(&calculator);
+    cout << "program finished" << endl;
     cout << *my_map;
     delete my_map;
     return 0;
