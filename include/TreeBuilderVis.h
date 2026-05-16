@@ -7,6 +7,14 @@
 
 class TreeBuilderVisitor : public PascalBaseVisitor {
     vector<Expr*> statements;
+    Expr* chainStatements(const vector<Expr*>& nodes) {
+        if (nodes.empty()) return nullptr;
+        Expr* root = nodes[0];
+        for (size_t i = 1; i < nodes.size(); i++) {
+            root = new Semicol(root, nodes[i]);
+        }
+        return root;
+    }
     string comp(PascalParser::ConditionContext* ctx) {
         if (ctx->LESS()) return "<";
         else if (ctx->GREATER()) return ">";
@@ -28,14 +36,7 @@ public:
             if (expr) statements.push_back(expr);
         }
 
-        if (statements.empty()) return nullptr;
-        Expr* root = statements[0];
-
-        for (size_t i = 1; i < statements.size(); i++) {
-            root = new Semicol(root, statements[i]);
-        }
-
-        return (Expr*)root;
+        return (Expr*)chainStatements(statements);
     }
 
     any visitStatement(PascalParser::StatementContext* ctx) override {
@@ -77,7 +78,7 @@ public:
             if (e) body.push_back(e);
         }
 
-        return (Expr*)new While(cond, body);
+        return (Expr*)new While(cond, chainStatements(body));
     }
 
     any visitIfcond(PascalParser::IfcondContext* ctx) override {
@@ -99,7 +100,7 @@ public:
             }
         }
 
-        return (Expr*)new IfCond(cond, thenBody, elseBody);
+        return (Expr*)new IfCond(cond, chainStatements(thenBody), chainStatements(elseBody));
     }
     any visitCondition(PascalParser::ConditionContext* ctx) override {
         Expr* left = toexp(visit(ctx->expression(0)));
